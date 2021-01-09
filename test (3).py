@@ -2,14 +2,14 @@ import pygame
 
 
 class Board:
-    def __init__(self, width, height):
+    def __init__(self, width, height, w, h):
         self.width = width
         self.height = height
         self.board = [[0] * width for _ in range(height)]
 
-        self.left = 170
-        self.top = 130
-        self.cell_size = 100
+        self.left = int(w * 0.15)
+        self.top = int(h * 0.15)
+        self.cell_size = int(h * 0.11)
 
     def set_view(self, left, top, cell_size):
         self.left = left
@@ -53,22 +53,27 @@ class Board:
         self.board[cell[1]][cell[0]] = 1
 
 
-def draw():
-    color = pygame.Color('#FFAA00')
-    pygame.draw.rect(screen, color, (50, 750, 350, 110))
-    pygame.draw.rect(screen, color, (450, 750, 150, 110))
-    pygame.draw.rect(screen, color, (900, 750, 200, 110))
-    pygame.draw.rect(screen, color, (700, 0, 350, 110))
+class Bottom:
+    def __init__(self, w, h):
+        self.w = w
+        self.h = h
+
+    def draw(self):
+        color = pygame.Color('#FFAA00')
+        pygame.draw.rect(screen, color, (self.w * 0.04, self.h * 0.83, self.w * 0.3, self.h * 0.12))
+        pygame.draw.rect(screen, color, (self.w * 0.4, self.h * 0.83, self.w * 0.13, self.h * 0.12))
+        pygame.draw.rect(screen, color, (self.w * 0.78, self.h * 0.83, self.w * 0.17, self.h * 0.12))
+        pygame.draw.rect(screen, color, (self.w * 0.6, 0, self.w * 0.3, self.h * 0.12))
 
 
 pygame.init()
-size = width, height = 1150, 860
+size = width, height = 1150, 700
 screen = pygame.display.set_mode(size)
 screen.fill('#C0F400')
 
-board = Board(8, 6)
+board = Board(8, 6, width, height)
+Bottom(width, height).draw()
 
-draw()
 pygame.display.flip()
 
 running = True

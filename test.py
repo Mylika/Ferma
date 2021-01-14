@@ -45,22 +45,18 @@ def load_image(name, colorkey=-9):
 
 
 class Board:
-    def __init__(self, width, height, w, h, save):
+    def __init__(self, width, height, w, h):
         self.width = width
         self.height = height
+        self.board = [['0'] * width for _ in range(height)]
+
+        self.left = int(w * 0.05)
+        self.top = int(h * 0.1)
+        self.cell_size = int(h * 0.09)
+
+    def set_view(self, save):
         if len(save) > 1:
             self.board = save
-        else:
-            self.board = [['0'] * width for _ in range(height)]
-
-        self.left = int(w * 0.15)
-        self.top = int(h * 0.15)
-        self.cell_size = int(h * 0.11)
-
-    def set_view(self, left, top, cell_size):
-        self.left = left
-        self.top = top
-        self.cell_size = cell_size
 
     def render(self):
         all_sprites.empty()
@@ -69,9 +65,9 @@ class Board:
         for i in range(self.height):
             for j in range(self.width):
                 pygame.draw.rect(screen, '#573B08', (x, y, self.cell_size, self.cell_size), 1)
-                if self.board[i][j] >= '1':
+                if int(self.board[i][j]) >= 1:
                     Plant(x, y, int(self.board[i][j]), all_sprites)
-                elif self.board[i][j] <= '-1':
+                elif int(self.board[i][j]) <= -1:
                     Weed(x, y, int(self.board[i][j]), all_sprites)
                 pygame.draw.rect(screen, '#865F1A', (x + 1, y + 1, self.cell_size - 2, self.cell_size - 2))
                 x += self.cell_size
@@ -101,14 +97,13 @@ class Board:
     def on_click(self, cell):
         if self.board[cell[1]][cell[0]] == '0':
             self.board[cell[1]][cell[0]] = '1'
-            #self.sorniak()
-        elif self.board[cell[1]][cell[0]] == '-1':
+        elif int(self.board[cell[1]][cell[0]]) <= -1:
             self.board[cell[1]][cell[0]] = '0'
 
     def sorniak(self):
         i, j = random.randrange(self.height), random.randrange(self.width)
 
-        while self.board[i][j] == '1' or self.board[i][j] == '-1':
+        while self.board[i][j] != '0':
             i, j = random.randrange(self.height), random.randrange(self.width)
 
         self.board[i][j] = '-1'
@@ -121,6 +116,7 @@ class Board:
                 elif self.board[i][j] == '-1' or self.board[i][j] == '-2':
                     self.board[i][j] = str(int(self.board[i][j]) - 1)
         self.sorniak()
+        self.sorniak()
 
     def save(self):
         save_data = open("Save.txt", 'w')
@@ -129,26 +125,10 @@ class Board:
         save_data.close()
 
 
-class Bottom:
-    def __init__(self, w, h):
-        self.w = w
-        self.h = h
-
-    def draw(self):
-        color = pygame.Color('#FFAA00')
-        #pygame.draw.rect(screen, color,
-        #                 (int(self.w * 0.1), int(self.h * 0.85), int(self.w * 0.1), int(self.h * 0.15)))  # панель выбора растения
-        #pygame.draw.rect(screen, color,
-        #                 (int(self.w * 0.25), int(self.h * 0.85), int(self.w * 0.1), int(self.h * 0.15)))  # мотыга, грабля
-        pygame.draw.rect(screen, color,
-                         (int(self.w * 0.79), int(self.h * 0.85), int(self.w * 0.2), int(self.h * 0.15)))  # меню
-        pygame.draw.rect(screen, color, (self.w * 0.6, 0, self.w * 0.3, self.h * 0.12))
-
-
 class Weed(pygame.sprite.Sprite):
-    image_1 = pygame.transform.scale(load_image("weed_1.png"), (int(height*0.11), int(height*0.11)))
-    image_2 = pygame.transform.scale(load_image("weed_2.png"), (int(height*0.11), int(height*0.11)))
-    image_3 = pygame.transform.scale(load_image("weed_3.png"), (int(height*0.11), int(height*0.11)))
+    image_1 = pygame.transform.scale(load_image("weed_1.png"), (int(height*0.09), int(height*0.09)))
+    image_2 = pygame.transform.scale(load_image("weed_2.png"), (int(height*0.09), int(height*0.09)))
+    image_3 = pygame.transform.scale(load_image("weed_3.png"), (int(height*0.09), int(height*0.09)))
 
     def __init__(self, w, h, level, *group):
         super().__init__(*group)
@@ -165,9 +145,9 @@ class Weed(pygame.sprite.Sprite):
 
 
 class Plant(pygame.sprite.Sprite):
-    image_1 = pygame.transform.scale(load_image("plant_1.png"), (int(height*0.11), int(height*0.11)))
-    image_2 = pygame.transform.scale(load_image("plant_2.png"), (int(height*0.11), int(height*0.11)))
-    image_3 = pygame.transform.scale(load_image("plant_3.png"), (int(height*0.11), int(height*0.11)))
+    image_1 = pygame.transform.scale(load_image("plant_1.png"), (int(height*0.09), int(height*0.09)))
+    image_2 = pygame.transform.scale(load_image("plant_2.png"), (int(height*0.09), int(height*0.09)))
+    image_3 = pygame.transform.scale(load_image("plant_3.png"), (int(height*0.09), int(height*0.09)))
 
     def __init__(self, w, h, level, *group):
         super().__init__(*group)
@@ -183,9 +163,10 @@ class Plant(pygame.sprite.Sprite):
         self.rect.y = h
 
 
-board = Board(8, 6, width, height, data)
-Bottom(width, height).draw()
+board = Board(12, 8, width, height)
 
+board.render()
+board.set_view(data)
 board.render()
 pygame.display.flip()
 p = 0

@@ -3,10 +3,21 @@ import random
 import os
 import sys
 
+file = open("Save.txt", encoding="utf-8")
+file_data = file.read().rstrip('\n').split('\n')
+file.close()
+data = []
+
+for i in file_data:
+    if i == '':
+        data.append([])
+    else:
+        data.append(i.split(', '))
 
 pygame.init()
 
 all_sprites = pygame.sprite.Group()
+bk = pygame.sprite.Group()
 
 #screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 #size = width, height = screen.get_size()
@@ -34,10 +45,13 @@ def load_image(name, colorkey=-9):
 
 
 class Board:
-    def __init__(self, width, height, w, h):
+    def __init__(self, width, height, w, h, save):
         self.width = width
         self.height = height
-        self.board = [[0] * width for _ in range(height)]
+        if len(save) > 1:
+            self.board = save
+        else:
+            self.board = [['0'] * width for _ in range(height)]
 
         self.left = int(w * 0.15)
         self.top = int(h * 0.15)
@@ -50,16 +64,16 @@ class Board:
 
     def render(self):
         all_sprites.empty()
+        self.save()
         x, y = self.left, self.top
         for i in range(self.height):
             for j in range(self.width):
                 pygame.draw.rect(screen, '#573B08', (x, y, self.cell_size, self.cell_size), 1)
-                if self.board[i][j] >= 1:
-                    Plant(x, y, self.board[i][j], all_sprites)
-                elif self.board[i][j] <= -1:
-                    Weed(x, y, self.board[i][j], all_sprites)
-                else:
-                    pygame.draw.rect(screen, '#865F1A', (x + 1, y + 1, self.cell_size - 2, self.cell_size - 2))
+                if self.board[i][j] >= '1':
+                    Plant(x, y, int(self.board[i][j]), all_sprites)
+                elif self.board[i][j] <= '-1':
+                    Weed(x, y, int(self.board[i][j]), all_sprites)
+                pygame.draw.rect(screen, '#865F1A', (x + 1, y + 1, self.cell_size - 2, self.cell_size - 2))
                 x += self.cell_size
             x = self.left
             y += self.cell_size
@@ -85,27 +99,34 @@ class Board:
             self.on_click(cell)
 
     def on_click(self, cell):
-        if self.board[cell[1]][cell[0]] == 0:
-            self.board[cell[1]][cell[0]] = 1
-            self.sorniak()
-        elif self.board[cell[1]][cell[0]] == -1:
-            self.board[cell[1]][cell[0]] = 0
+        if self.board[cell[1]][cell[0]] == '0':
+            self.board[cell[1]][cell[0]] = '1'
+            #self.sorniak()
+        elif self.board[cell[1]][cell[0]] == '-1':
+            self.board[cell[1]][cell[0]] = '0'
 
     def sorniak(self):
         i, j = random.randrange(self.height), random.randrange(self.width)
 
-        while self.board[i][j] == 1 or self.board[i][j] == -1:
+        while self.board[i][j] == '1' or self.board[i][j] == '-1':
             i, j = random.randrange(self.height), random.randrange(self.width)
 
-        self.board[i][j] = -1
+        self.board[i][j] = '-1'
 
     def update(self):
         for i in range(self.height):
             for j in range(self.width):
-                if self.board[i][j] == 1 or self.board[i][j] == 2:
-                    self.board[i][j] += 1
-                elif self.board[i][j] == -1 or self.board[i][j] == -2:
-                    self.board[i][j] -= 1
+                if self.board[i][j] == '1' or self.board[i][j] == '2':
+                    self.board[i][j] = str(int(self.board[i][j]) + 1)
+                elif self.board[i][j] == '-1' or self.board[i][j] == '-2':
+                    self.board[i][j] = str(int(self.board[i][j]) - 1)
+        self.sorniak()
+
+    def save(self):
+        save_data = open("Save.txt", 'w')
+        for elem in self.board:
+            save_data.write(', '.join(elem) + '\n')
+        save_data.close()
 
 
 class Bottom:
@@ -162,7 +183,7 @@ class Plant(pygame.sprite.Sprite):
         self.rect.y = h
 
 
-board = Board(8, 6, width, height)
+board = Board(8, 6, width, height, data)
 Bottom(width, height).draw()
 
 board.render()

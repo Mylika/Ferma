@@ -1,0 +1,79 @@
+import os
+import sys
+import pygame
+from subprocess import call
+
+
+all_sprites = pygame.sprite.Group()
+buttons = pygame.sprite.Group()
+
+pygame.init()
+
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+size = width, height = screen.get_size()
+screen.fill('#FFA340')
+
+
+def load_image(name, colorkey=None):
+    fullname = os.path.join('data', name)
+
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    if colorkey is not None:
+        image = image.convert()
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey)
+    else:
+        image = image.convert_alpha()
+    return image
+
+
+im = pygame.transform.scale(load_image("фон.jpg"), size)
+background = pygame.sprite.Sprite(all_sprites)
+background.image = im
+background.rect = background.image.get_rect()
+
+im = pygame.transform.scale(load_image("New_game.png"), (int(width*0.23), int(height*0.17)))
+new_game_but = pygame.sprite.Sprite(buttons)
+new_game_but.image = im
+new_game_but.rect = new_game_but.image.get_rect()
+new_game_but.rect.x = int(width*0.06)
+new_game_but.rect.y = int(height*0.4)
+
+im = pygame.transform.scale(load_image("Continue.png"), (int(width*0.23), int(height*0.17)))
+continue_but = pygame.sprite.Sprite(buttons)
+continue_but.image = im
+continue_but.rect = continue_but.image.get_rect()
+continue_but.rect.x = int(width*0.06)
+continue_but.rect.y = int(height*0.58)
+
+im = pygame.transform.scale(load_image("Quit.png"), (int(width*0.23), int(height*0.17)))
+quit_but = pygame.sprite.Sprite(buttons)
+quit_but.image = im
+quit_but.rect = quit_but.image.get_rect()
+quit_but.rect.x = int(width*0.7)
+quit_but.rect.y = int(height*0.75)
+
+all_sprites.draw(screen)
+buttons.draw(screen)
+
+pygame.display.flip()
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN and quit_but.rect.collidepoint(event.pos):
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN and new_game_but.rect.collidepoint(event.pos):
+            call(["python", "test.py"])
+        if event.type == pygame.MOUSEBUTTONDOWN and continue_but.rect.collidepoint(event.pos):
+            call(["python", "test.py"])
+
+    pygame.display.flip()
+
+pygame.quit()
